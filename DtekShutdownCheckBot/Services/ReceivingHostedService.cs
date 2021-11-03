@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ using Telegram.Bot.Extensions.Polling;
 
 namespace DtekShutdownCheckBot.Services
 {
-    public class ReceivingHostedService : IHostedService
+    public class ReceivingHostedService : BackgroundService
     {
         private ITelegramBotClient _client;
         private readonly IServiceCollection _serviceCollection;
@@ -19,17 +20,14 @@ namespace DtekShutdownCheckBot.Services
             _serviceCollection = serviceCollection;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _client.StartReceiving(new TelegramDtekUpdateHandler(), cancellationToken);
+            _client.StartReceiving(new TelegramDtekUpdateHandler(), stoppingToken);
 
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            
-            return Task.CompletedTask;
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000);
+            }
         }
     }
 }

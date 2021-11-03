@@ -7,8 +7,6 @@ namespace DtekShutdownCheckBot.Services
     public class DtekCheckingHostedService : IHostedService
     {
         
-
-
         public Task StartAsync(CancellationToken cancellationToken)
         {
             throw new System.NotImplementedException();

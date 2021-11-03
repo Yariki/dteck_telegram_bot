@@ -1,4 +1,6 @@
 ﻿using DtekShutdownCheckBot.Models;
+using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,10 +23,12 @@ namespace DtekShutdownCheckBot
 
         public void ConfigureServices(IServiceCollection services)
         {
-           
+            services.AddTransient<IRepository<string, Chat>, ChatRepository>();
+            services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
             services.AddHttpClient("tgwebclient")
                     .AddTypedClient<ITelegramBotClient>(httpClient
                         => new TelegramBotClient(BotConfig.Token, httpClient));
+            
 
         }
 
