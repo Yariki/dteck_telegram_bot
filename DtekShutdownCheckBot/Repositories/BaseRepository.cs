@@ -34,6 +34,8 @@ namespace DtekShutdownCheckBot.Repositories
             return Set.Find(selector).FirstOrDefault();
         }
 
+        public IEnumerable<TEntity> GetAllBy(Expression<Func<TEntity, bool>> selector) => Set.Find(selector);
+
         public IEnumerable<TEntity> GetAll() => Set.FindAll();
         
         public void Update(TEntity entity)

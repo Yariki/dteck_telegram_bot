@@ -12,5 +12,6 @@ namespace DtekShutdownCheckBot.Repositories
         void Delete(TKey key);
         IEnumerable<TEntity> GetAll();
         void DeleteAll();
+        IEnumerable<TEntity> GetAllBy(Expression<Func<TEntity, bool>> selector);
     }
 }

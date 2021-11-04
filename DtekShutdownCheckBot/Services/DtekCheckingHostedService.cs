@@ -6,6 +6,8 @@ namespace DtekShutdownCheckBot.Services
 {
     public class DtekCheckingHostedService : IHostedService
     {
+        private Timer _timer;
+        
         
         public Task StartAsync(CancellationToken cancellationToken)
         {

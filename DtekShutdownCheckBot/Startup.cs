@@ -1,6 +1,7 @@
 ﻿using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
+using DtekShutdownCheckBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,8 @@ namespace DtekShutdownCheckBot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IRepository<string, Chat>, ChatRepository>();
+            services.AddHostedService<ReceivingHostedService>();
+            services.AddHostedService<DtekCheckingHostedService>();
             services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
             services.AddHttpClient("tgwebclient")
                     .AddTypedClient<ITelegramBotClient>(httpClient
@@ -40,5 +43,6 @@ namespace DtekShutdownCheckBot
             }
             
         }
+        
     }
 }
