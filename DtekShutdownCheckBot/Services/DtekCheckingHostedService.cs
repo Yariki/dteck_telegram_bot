@@ -1,22 +1,44 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Repositories;
 using Microsoft.Extensions.Hosting;
 
 namespace DtekShutdownCheckBot.Services
 {
-    public class DtekCheckingHostedService : IHostedService
+    public class DtekCheckingHostedService : IHostedService, IDisposable
     {
-        private Timer _timer;
-        
-        
+	    private readonly IRepository<string, Chat> _charRepository;
+	    private Timer _timer;
+
+        public DtekCheckingHostedService(IRepository<string, Chat> charRepository)
+        {
+	        _charRepository = charRepository;
+        }
+
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+	        _timer = new Timer(DoCheck, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+	        return Task.CompletedTask;
+        }
+
+        private void DoCheck(object? state)
+        {
+	        throw new NotImplementedException();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+	        _timer?.Change(Timeout.Infinite, 0);
+
+	        return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+	        _timer?.Dispose();
         }
     }
 }
