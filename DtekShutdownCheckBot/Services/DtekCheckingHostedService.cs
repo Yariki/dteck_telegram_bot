@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DtekShutdownCheckBot.Models.Entities;
@@ -9,6 +12,10 @@ namespace DtekShutdownCheckBot.Services
 {
     public class DtekCheckingHostedService : IHostedService, IDisposable
     {
+	    const string DTEK_URL = "https://www.dtek-krem.com.ua/ua/outages?query=&rem=%D0%91%D0%BE%D1%80%D0%B8%D1%81%D0%BF%D1%96%D0%BB%D1%8C%D1%81%D1%8C%D0%BA%D0%B8%D0%B9&type=-1&status=-1&shutdown-date=-1&inclusion-date=-1&create-date=-1&page=";
+
+	    private const int NUMBER_PAGES = 3;
+
 	    private readonly IRepository<string, Chat> _charRepository;
 	    private Timer _timer;
 
@@ -24,9 +31,20 @@ namespace DtekShutdownCheckBot.Services
 	        return Task.CompletedTask;
         }
 
-        private void DoCheck(object? state)
+        private async void DoCheck(object? state)
         {
-	        throw new NotImplementedException();
+	        var words = _charRepository.GetAll().SelectMany(c => c.Words).Distinct();
+
+	        for (int i = 1; i <= NUMBER_PAGES; i++)
+	        {
+		        var url = $"{DTEK_URL}{i}";
+		        using var client = new HttpClient();
+		        var content = await client.GetStringAsync(new Uri(url));
+		        if(string.IsNullOrEmpty(content))
+			        continue;
+
+	        }
+
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
