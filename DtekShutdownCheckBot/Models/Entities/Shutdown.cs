@@ -11,10 +11,12 @@ namespace DtekShutdownCheckBot.Models.Entities
         public DateTime ShutdownDate { get; set; }
 
         public string City { get; set; }
-        
+
         public long Hashcode { get; set; }
 
         public bool IsSent { get; set; }
+
+
 
     }
 }

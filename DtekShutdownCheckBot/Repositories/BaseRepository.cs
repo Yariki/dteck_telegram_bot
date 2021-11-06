@@ -20,11 +20,16 @@ namespace DtekShutdownCheckBot.Repositories
             _db = new LiteDatabase(_options.Value.ConnectionString);
             Set = _db.GetCollection<TEntity>() as LiteCollection<TEntity>;
         }
-        
+
         protected LiteCollection<TEntity> Set { get; }
 
+        public void Add(TEntity model)
+        {
+	        Set.Insert(model);
+        }
+
         public abstract TEntity GetById(TKey key);
-        
+
         public TEntity GetBy(Expression<Func<TEntity,bool>> selector)
         {
             if (selector == null)
@@ -37,7 +42,7 @@ namespace DtekShutdownCheckBot.Repositories
         public IEnumerable<TEntity> GetAllBy(Expression<Func<TEntity, bool>> selector) => Set.Find(selector);
 
         public IEnumerable<TEntity> GetAll() => Set.FindAll();
-        
+
         public void Update(TEntity entity)
         {
             Set.Update(entity);
@@ -46,7 +51,7 @@ namespace DtekShutdownCheckBot.Repositories
         public abstract void Delete(TKey key);
 
         public void DeleteAll() => Set.DeleteAll();
-        
+
         public void Dispose()
         {
             _db.Dispose();

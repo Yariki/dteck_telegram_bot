@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using DtekShutdownCheckBot.Models.Entities;
@@ -18,11 +19,13 @@ namespace DtekShutdownCheckBot.Services
 	    private const int NUMBER_PAGES = 3;
 
 	    private readonly IRepository<string, Chat> _charRepository;
+	    private readonly IRepository<string, Shutdown> _shutdownRepository;
 	    private Timer _timer;
 
-        public DtekCheckingHostedService(IRepository<string, Chat> charRepository)
+        public DtekCheckingHostedService(IRepository<string, Chat> charRepository, IRepository<string,Shutdown> shutdownRepository)
         {
 	        _charRepository = charRepository;
+	        _shutdownRepository = shutdownRepository;
         }
 
 
@@ -36,6 +39,9 @@ namespace DtekShutdownCheckBot.Services
         {
 	        var words = _charRepository.GetAll().SelectMany(c => c.Words).Distinct();
 
+
+	        var shutdowns = new Dictionary<string, HashSet<DateTime>>();
+
 	        for (int i = 1; i <= NUMBER_PAGES; i++)
 	        {
 		        var url = $"{DTEK_URL}{i}";
@@ -46,23 +52,51 @@ namespace DtekShutdownCheckBot.Services
                 HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
                 doc.LoadHtml(content);
                 var col = doc.DocumentNode.SelectNodes("//tr[@data-id]");
-                var dict = new Dictionary<string, DateTime>();
 
                 foreach (var element in col)
-                {   
+                {
                     var childs = element.ChildNodes.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode)).ToList();
                     var existingWords = words.Where(w =>
                         childs[3].InnerText.Contains(w, StringComparison.InvariantCultureIgnoreCase));
-                    
+                    var date = DateTime.Parse(childs[0].InnerText.Trim());
+
                     foreach (var existingWord in existingWords)
                     {
-                        if(dict.ContainsKey(existingWord))
-                            continue;
-                        dict.Add(existingWord, DateTime.Parse(childs[0].InnerText.Trim()));
-                    }
+	                    if (shutdowns.ContainsKey(existingWord) && shutdowns[existingWord].Contains(date))
+	                    {
+		                    continue;
+	                    }
 
-                    
+	                    if (shutdowns.ContainsKey(existingWord) && !shutdowns[existingWord].Contains(date))
+	                    {
+		                    shutdowns[existingWord].Add(date);
+	                    }
+	                    else
+	                    {
+		                    shutdowns.Add(existingWord, new HashSet<DateTime>(){date});
+	                    }
+                    }
                 }
+	        }
+
+	        if (!shutdowns.Any())
+		        return;
+
+
+	        foreach (var shutdown in shutdowns)
+	        {
+		        foreach (var dateTime in shutdown.Value)
+		        {
+			        var model = new Shutdown()
+			        {
+				        Id = Guid.NewGuid().ToString(),
+				        City = shutdown.Key,
+				        ShutdownDate = dateTime,
+				        Hashcode = shutdown.Key.GetHashCode() ^ dateTime.GetHashCode(),
+				        IsSent = false
+			        };
+			        _shutdownRepository.Add(model);
+		        }
 	        }
 
         }
