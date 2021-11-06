@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -42,7 +43,26 @@ namespace DtekShutdownCheckBot.Services
 		        var content = await client.GetStringAsync(new Uri(url));
 		        if(string.IsNullOrEmpty(content))
 			        continue;
+                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(content);
+                var col = doc.DocumentNode.SelectNodes("//tr[@data-id]");
+                var dict = new Dictionary<string, DateTime>();
 
+                foreach (var element in col)
+                {   
+                    var childs = element.ChildNodes.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode)).ToList();
+                    var existingWords = words.Where(w =>
+                        childs[3].InnerText.Contains(w, StringComparison.InvariantCultureIgnoreCase));
+                    
+                    foreach (var existingWord in existingWords)
+                    {
+                        if(dict.ContainsKey(existingWord))
+                            continue;
+                        dict.Add(existingWord, DateTime.Parse(childs[0].InnerText.Trim()));
+                    }
+
+                    
+                }
 	        }
 
         }
