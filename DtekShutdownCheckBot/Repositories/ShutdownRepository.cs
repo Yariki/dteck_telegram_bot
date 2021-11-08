@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace DtekShutdownCheckBot.Repositories
 {
-    public class ShutdownRepository : BaseRepository<string, Shutdown>
+    public class ShutdownRepository : BaseRepository<string, Shutdown>, IShutdownRepository
     {
         public ShutdownRepository(IOptions<LiteDbOptions> options) : base(options)
         {
@@ -25,6 +26,12 @@ namespace DtekShutdownCheckBot.Repositories
         public IEnumerable<Shutdown> GetAllNotSentShutdowns()
         {
             return GetAllBy(s => !s.IsSent);
+        }
+
+        public bool IsExistShutdown(string city, DateTime date)
+        {
+	        return GetAll().Any(s => string.Equals(s.City, city, StringComparison.InvariantCultureIgnoreCase) &&
+	                                 s.ShutdownDate == date);
         }
 
     }

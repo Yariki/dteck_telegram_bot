@@ -19,10 +19,10 @@ namespace DtekShutdownCheckBot.Services
 	    private const int NUMBER_PAGES = 3;
 
 	    private readonly IRepository<string, Chat> _charRepository;
-	    private readonly IRepository<string, Shutdown> _shutdownRepository;
+	    private readonly IShutdownRepository _shutdownRepository;
 	    private Timer _timer;
 
-        public DtekCheckingHostedService(IRepository<string, Chat> charRepository, IRepository<string,Shutdown> shutdownRepository)
+        public DtekCheckingHostedService(IRepository<string, Chat> charRepository, IShutdownRepository shutdownRepository)
         {
 	        _charRepository = charRepository;
 	        _shutdownRepository = shutdownRepository;
@@ -55,13 +55,18 @@ namespace DtekShutdownCheckBot.Services
 
                 foreach (var element in col)
                 {
-                    var childs = element.ChildNodes.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode)).ToList();
+                    var children = element.ChildNodes.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode)).ToList();
                     var existingWords = words.Where(w =>
-                        childs[3].InnerText.Contains(w, StringComparison.InvariantCultureIgnoreCase));
-                    var date = DateTime.Parse(childs[0].InnerText.Trim());
+                        children[3].InnerText.Contains(w, StringComparison.InvariantCultureIgnoreCase));
+                    var date = DateTime.Parse(children[0].InnerText.Trim());
 
                     foreach (var existingWord in existingWords)
                     {
+	                    if (_shutdownRepository.IsExistShutdown(existingWord, date))
+	                    {
+		                    continue;
+	                    }
+
 	                    if (shutdowns.ContainsKey(existingWord) && shutdowns[existingWord].Contains(date))
 	                    {
 		                    continue;
