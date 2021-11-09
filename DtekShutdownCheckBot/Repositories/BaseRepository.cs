@@ -18,7 +18,8 @@ namespace DtekShutdownCheckBot.Repositories
         protected BaseRepository(IOptions<LiteDbOptions> options)
         {
             _options = options;
-            _db = new LiteDatabase(GetConnectionString(_options.Value));
+            var connectionString = @$"Filename={GetConnectionString(_options.Value)}; Connection=Shared;";
+            _db = new LiteDatabase(connectionString);
             Set = _db.GetCollection<TEntity>() as LiteCollection<TEntity>;
         }
 

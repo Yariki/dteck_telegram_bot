@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,6 +46,10 @@ namespace DtekShutdownCheckBot.Services
         {
 	        var words = _charRepository.GetAll().SelectMany(c => c.Words).Distinct();
 
+			if(!words.Any())
+            {
+				return;
+            }
 
 	        var shutdowns = new Dictionary<string, HashSet<DateTime>>();
 
