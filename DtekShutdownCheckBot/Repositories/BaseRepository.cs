@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using DtekShutdownCheckBot.Models;
@@ -17,7 +18,7 @@ namespace DtekShutdownCheckBot.Repositories
         protected BaseRepository(IOptions<LiteDbOptions> options)
         {
             _options = options;
-            _db = new LiteDatabase(_options.Value.ConnectionString);
+            _db = new LiteDatabase(GetConnectionString(_options.Value));
             Set = _db.GetCollection<TEntity>() as LiteCollection<TEntity>;
         }
 
@@ -55,6 +56,17 @@ namespace DtekShutdownCheckBot.Repositories
         public void Dispose()
         {
             _db.Dispose();
+        }
+
+        private string GetConnectionString(LiteDbOptions options)
+        {
+	        var di = new DirectoryInfo(options.FolderName);
+	        if (!di.Exists)
+	        {
+		        di.Create();
+	        }
+
+	        return Path.Combine(options.FolderName, options.FileName);
         }
     }
 }

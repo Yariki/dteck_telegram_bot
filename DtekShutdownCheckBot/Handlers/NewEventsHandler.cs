@@ -13,11 +13,11 @@ namespace DtekShutdownCheckBot.Handlers
 	public class NewEventsHandler : INotificationHandler<NewEvents>
 	{
 		private readonly IRepository<string, Chat> _chatRepository;
-		private readonly IRepository<string, Shutdown> _shutdownRepository;
+		private readonly IShutdownRepository _shutdownRepository;
 		private readonly ITelegramBotClient _telegramBotClient;
 
 		public NewEventsHandler(IRepository<string, Chat> chatRepository,
-			IRepository<string, Shutdown> shutdownRepository,
+			IShutdownRepository shutdownRepository,
 			ITelegramBotClient telegramBotClient)
 		{
 			_chatRepository = chatRepository;
@@ -27,7 +27,7 @@ namespace DtekShutdownCheckBot.Handlers
 
 		public Task Handle(NewEvents notification, CancellationToken cancellationToken)
 		{
-			var newEvents = _shutdownRepository.GetAllBy(s => !s.IsSent);
+			var newEvents = _shutdownRepository.GetAllNotSentShutdowns();
 			if (!newEvents.Any())
 			{
 				return Task.CompletedTask;
@@ -49,6 +49,7 @@ namespace DtekShutdownCheckBot.Handlers
 
 				newEvent.IsSent = true;
 				_shutdownRepository.Update(newEvent);
+
 			}
 
 			return Task.CompletedTask;

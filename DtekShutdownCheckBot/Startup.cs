@@ -26,6 +26,7 @@ namespace DtekShutdownCheckBot
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IRepository<string, Chat>, ChatRepository>();
+            services.AddTransient<IShutdownRepository, ShutdownRepository>();
             services.AddHostedService<ReceivingHostedService>();
             services.AddHostedService<DtekCheckingHostedService>();
             services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));

@@ -16,12 +16,13 @@ namespace DtekShutdownCheckBot.Services
 
         public Task HandleUpdate(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+
+	        return Task.CompletedTask;
         }
 
         public Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+	        return Task.CompletedTask;
         }
 
         public UpdateType[]? AllowedUpdates { get; }

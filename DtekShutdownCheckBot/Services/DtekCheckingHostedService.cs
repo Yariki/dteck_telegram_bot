@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
+using MediatR;
 using Microsoft.Extensions.Hosting;
 
 namespace DtekShutdownCheckBot.Services
@@ -20,12 +22,16 @@ namespace DtekShutdownCheckBot.Services
 
 	    private readonly IRepository<string, Chat> _charRepository;
 	    private readonly IShutdownRepository _shutdownRepository;
+	    private readonly IMediator _mediator;
 	    private Timer _timer;
 
-        public DtekCheckingHostedService(IRepository<string, Chat> charRepository, IShutdownRepository shutdownRepository)
+        public DtekCheckingHostedService(IRepository<string, Chat> charRepository,
+	        IShutdownRepository shutdownRepository,
+	        IMediator mediator)
         {
 	        _charRepository = charRepository;
 	        _shutdownRepository = shutdownRepository;
+	        _mediator = mediator;
         }
 
 
@@ -104,6 +110,7 @@ namespace DtekShutdownCheckBot.Services
 		        }
 	        }
 
+	        _mediator?.Publish(new NewEvents());
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
