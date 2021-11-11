@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="DB" />
     <Folder Include="Models\Entities\" />
   </ItemGroup>
 

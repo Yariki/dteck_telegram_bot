@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using DtekShutdownCheckBot.Models;
@@ -12,6 +14,7 @@ using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
 using MediatR;
 using Microsoft.Extensions.Hosting;
+using Microsoft.VisualBasic;
 
 namespace DtekShutdownCheckBot.Services
 {
@@ -44,9 +47,9 @@ namespace DtekShutdownCheckBot.Services
 
         private async void DoCheck(object? state)
         {
-	        var words = _charRepository.GetAll().SelectMany(c => c.Words).Distinct();
+	        var words = _charRepository.GetAll().SelectMany(c => c.Words).Distinct().ToList();
 
-			if(!words.Any())
+			if(words == null || !words.Any())
             {
 				return;
             }
@@ -68,7 +71,13 @@ namespace DtekShutdownCheckBot.Services
                 {
                     var children = element.ChildNodes.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode)).ToList();
                     var existingWords = words.Where(w =>
-                        children[3].InnerText.Contains(w, StringComparison.InvariantCultureIgnoreCase));
+	                    {
+		                    var subString = Regex.Escape(w);
+		                    var input = children[3].InnerText.Replace("\n", string.Empty).Trim();
+		                    var match = Regex.IsMatch(input, subString, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+		                    return match;
+	                    }
+	                    ).Select(w => w).ToList();
                     var date = DateTime.Parse(children[0].InnerText.Trim());
 
                     foreach (var existingWord in existingWords)
@@ -96,7 +105,9 @@ namespace DtekShutdownCheckBot.Services
 	        }
 
 	        if (!shutdowns.Any())
+	        {
 		        return;
+	        }
 
 
 	        foreach (var shutdown in shutdowns)
@@ -115,7 +126,10 @@ namespace DtekShutdownCheckBot.Services
 		        }
 	        }
 
-	        _mediator?.Publish(new NewEvents());
+	        if (shutdowns.Any())
+	        {
+		        _mediator?.Publish(new NewEvents());
+	        }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

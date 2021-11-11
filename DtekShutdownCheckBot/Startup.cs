@@ -1,4 +1,5 @@
-﻿using DtekShutdownCheckBot.Models;
+﻿using DtekShutdownCheckBot.Commands;
+using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
 using MediatR;
+using ServiceFactory = DtekShutdownCheckBot.Services.ServiceFactory;
 
 namespace DtekShutdownCheckBot
 {
@@ -25,15 +27,19 @@ namespace DtekShutdownCheckBot
 
         public void ConfigureServices(IServiceCollection services)
         {
+
+	        services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
+	        services.AddHttpClient("tgwebclient")
+		        .AddTypedClient<ITelegramBotClient>(httpClient
+			        => new TelegramBotClient(BotConfig.Token, httpClient));
+	        services.AddMediatR(typeof(Startup).Assembly);
+	        services.AddSingleton<IServiceFactory>(provider => new ServiceFactory(provider.GetService));
             services.AddTransient<IRepository<string, Chat>, ChatRepository>();
             services.AddTransient<IShutdownRepository, ShutdownRepository>();
+            services.AddTransient<ICommandsFactory, CommandsFactory>();
             services.AddHostedService<ReceivingHostedService>();
             services.AddHostedService<DtekCheckingHostedService>();
-            services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
-            services.AddHttpClient("tgwebclient")
-                    .AddTypedClient<ITelegramBotClient>(httpClient
-                        => new TelegramBotClient(BotConfig.Token, httpClient));
-            services.AddMediatR(typeof(Startup).Assembly);
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

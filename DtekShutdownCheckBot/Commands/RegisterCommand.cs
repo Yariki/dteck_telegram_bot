@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using DtekShutdownCheckBot.Repositories;
+using DtekShutdownCheckBot.Services;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Chat = DtekShutdownCheckBot.Models.Entities.Chat;
+
+namespace DtekShutdownCheckBot.Commands
+{
+	public class RegisterCommand : Command<string>
+	{
+
+		public RegisterCommand(IServiceFactory serviceFactory,
+			ITelegramBotClient botClient,
+			string argument) : base(serviceFactory, botClient, argument)
+		{
+
+		}
+
+		public override async Task ExecuteAsync(Message message)
+		{
+			var chatRepository = ServiceFactory.Get<IRepository<string, Chat>>();
+
+			var chat = chatRepository.GetBy(c => c.ChatId == message.Chat.Id);
+			if (chat == null)
+			{
+				chat = new Chat()
+				{
+					Id = Guid.NewGuid().ToString(),
+					ChatId = message.Chat.Id,
+					FirstName = message.Chat.FirstName,
+					LastName = message.Chat.LastName
+				};
+				chatRepository.Add(chat);
+			}
+
+			if(chat.Words == null && !string.IsNullOrEmpty(Argument))
+			{
+				chat.Words = new List<string>() { Argument }.ToArray();
+			}
+			else if(!string.IsNullOrEmpty(Argument))
+			{
+				chat.Words = new List<string>(chat.Words) { Argument }.ToArray();
+			}
+			chatRepository.Update(chat);
+
+			if (!string.IsNullOrEmpty(Argument))
+			{
+				await _BotClient.SendTextMessageAsync(chat.ChatId, $"The {Argument} has been registered");
+			}
+
+		}
+	}
+}
