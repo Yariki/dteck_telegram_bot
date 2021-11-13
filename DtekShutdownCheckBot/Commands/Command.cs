@@ -22,7 +22,7 @@ namespace DtekShutdownCheckBot.Commands
 
 		protected T Argument => _argument;
 
-		protected ITelegramBotClient _BotClient => _botClient;
+		protected ITelegramBotClient BotClient => _botClient;
 
 		protected IServiceFactory ServiceFactory => _serviceFactory;
 

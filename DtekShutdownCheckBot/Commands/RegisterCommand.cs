@@ -48,7 +48,7 @@ namespace DtekShutdownCheckBot.Commands
 
 			if (!string.IsNullOrEmpty(Argument))
 			{
-				await _BotClient.SendTextMessageAsync(chat.ChatId, $"The {Argument} has been registered");
+				await BotClient.SendTextMessageAsync(chat.ChatId, $"The {Argument} has been registered");
 			}
 
 		}

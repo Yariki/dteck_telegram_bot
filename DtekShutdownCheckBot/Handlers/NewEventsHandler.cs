@@ -26,13 +26,13 @@ namespace DtekShutdownCheckBot.Handlers
 		public Task Handle(NewEvents notification, CancellationToken cancellationToken)
 		{
 			using var unitOfWork = _serviceFactory.Get<IUnitOfWork>();
-			var newEvents = unitOfWork.ShutdownRepository.GetAllNotSentShutdowns();
+			var newEvents = unitOfWork.ShutdownRepository.GetAllNotSentShutdowns().OrderBy(s => s.ShutdownDate).ToList();
 			if (!newEvents.Any())
 			{
 				return Task.CompletedTask;
 			}
 
-			foreach (var newEvent in newEvents.OrderBy(e => e.ShutdownDate))
+			foreach (var newEvent in newEvents)
 			{
 				var chats = unitOfWork.ChatRepository.GetAllBy(c => c.Words.Contains(newEvent.City));
 				if (!chats.Any())

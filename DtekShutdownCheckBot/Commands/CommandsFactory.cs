@@ -14,7 +14,9 @@ namespace DtekShutdownCheckBot.Commands
 	{
 		private IDictionary<string, Type> _commandTypes = new Dictionary<string, Type>()
 		{
-			{ "city", typeof(RegisterCommand) }
+			{ "city", typeof(RegisterCommand) },
+			{ "clear", typeof(ClearCommand) },
+			{ "list", typeof(ListCommand) }
 		};
 
 		private readonly IServiceProvider _serviceProvider;
@@ -39,7 +41,6 @@ namespace DtekShutdownCheckBot.Commands
 				_serviceFactory.Get<ITelegramBotClient>(), info.arg);
 			return command;
 		}
-
 
 		private (string cmd,string arg) ParseCommandAndArgument(Update update)
 		{
