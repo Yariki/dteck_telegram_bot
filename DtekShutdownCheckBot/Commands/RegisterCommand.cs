@@ -21,9 +21,9 @@ namespace DtekShutdownCheckBot.Commands
 
 		public override async Task ExecuteAsync(Message message)
 		{
-			var chatRepository = ServiceFactory.Get<IRepository<string, Chat>>();
+			var unitOfWork = ServiceFactory.Get<IUnitOfWork>();
 
-			var chat = chatRepository.GetBy(c => c.ChatId == message.Chat.Id);
+			var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id);
 			if (chat == null)
 			{
 				chat = new Chat()
@@ -33,7 +33,7 @@ namespace DtekShutdownCheckBot.Commands
 					FirstName = message.Chat.FirstName,
 					LastName = message.Chat.LastName
 				};
-				chatRepository.Add(chat);
+				unitOfWork.ChatRepository.Add(chat);
 			}
 
 			if(chat.Words == null && !string.IsNullOrEmpty(Argument))
@@ -44,7 +44,7 @@ namespace DtekShutdownCheckBot.Commands
 			{
 				chat.Words = new List<string>(chat.Words) { Argument }.ToArray();
 			}
-			chatRepository.Update(chat);
+			unitOfWork.ChatRepository.Update(chat);
 
 			if (!string.IsNullOrEmpty(Argument))
 			{

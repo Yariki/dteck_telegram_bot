@@ -15,21 +15,17 @@ namespace DtekShutdownCheckBot.Services
     public class ReceivingHostedService : BackgroundService
     {
         private ITelegramBotClient _client;
-        private readonly IRepository<string, Chat> _chatRepository;
         private readonly ICommandsFactory _commandsFactory;
 
-        public ReceivingHostedService(ITelegramBotClient client,
-	        IRepository<string,Chat> chatRepository,
-	        ICommandsFactory commandsFactory)
+        public ReceivingHostedService(ITelegramBotClient client, ICommandsFactory commandsFactory)
         {
 	        _client = client;
-	        _chatRepository = chatRepository;
 	        _commandsFactory = commandsFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _client.StartReceiving(new TelegramDtekUpdateHandler(_chatRepository, _commandsFactory), stoppingToken);
+            _client.StartReceiving(new TelegramDtekUpdateHandler(_commandsFactory), stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {

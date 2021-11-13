@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
+using LiteDB;
 using Microsoft.Extensions.Options;
 
 namespace DtekShutdownCheckBot.Repositories
 {
     public class ShutdownRepository : BaseRepository<string, Shutdown>, IShutdownRepository
     {
-        public ShutdownRepository(IOptions<LiteDbOptions> options) : base(options)
+        public ShutdownRepository(LiteDatabase db) : base(db)
         {
         }
 

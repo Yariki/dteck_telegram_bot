@@ -1,13 +1,14 @@
 ﻿using System;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
+using LiteDB;
 using Microsoft.Extensions.Options;
 
 namespace DtekShutdownCheckBot.Repositories
 {
     public class ChatRepository : BaseRepository<string, Chat>
     {
-        public ChatRepository(IOptions<LiteDbOptions> options) : base(options)
+        public ChatRepository(LiteDatabase db) : base(db)
         {
         }
         

@@ -1,4 +1,5 @@
-﻿using DtekShutdownCheckBot.Commands;
+﻿using System.Text;
+using DtekShutdownCheckBot.Commands;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
@@ -27,15 +28,14 @@ namespace DtekShutdownCheckBot
 
         public void ConfigureServices(IServiceCollection services)
         {
-
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 	        services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
 	        services.AddHttpClient("tgwebclient")
 		        .AddTypedClient<ITelegramBotClient>(httpClient
 			        => new TelegramBotClient(BotConfig.Token, httpClient));
 	        services.AddMediatR(typeof(Startup).Assembly);
 	        services.AddSingleton<IServiceFactory>(provider => new ServiceFactory(provider.GetService));
-            services.AddTransient<IRepository<string, Chat>, ChatRepository>();
-            services.AddTransient<IShutdownRepository, ShutdownRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<ICommandsFactory, CommandsFactory>();
             services.AddHostedService<ReceivingHostedService>();
             services.AddHostedService<DtekCheckingHostedService>();

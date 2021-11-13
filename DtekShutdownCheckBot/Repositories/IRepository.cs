@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace DtekShutdownCheckBot.Repositories
 {
-    public interface IRepository<TKey,TEntity> : IDisposable where TEntity : class
+    public interface IRepository<TKey,TEntity> where TEntity : class
     {
         TEntity GetById(TKey key);
         TEntity GetBy(Expression<Func<TEntity,bool>> selector);

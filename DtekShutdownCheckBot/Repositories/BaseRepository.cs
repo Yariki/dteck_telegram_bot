@@ -12,15 +12,9 @@ namespace DtekShutdownCheckBot.Repositories
 {
     public abstract class BaseRepository<TKey, TEntity> : IRepository<TKey,TEntity> where TEntity  : class
     {
-        private LiteDatabase _db;
-        private IOptions<LiteDbOptions> _options;
-
-        protected BaseRepository(IOptions<LiteDbOptions> options)
+        protected BaseRepository(LiteDatabase db)
         {
-            _options = options;
-            var connectionString = @$"Filename={GetConnectionString(_options.Value)}; Connection=Shared;";
-            _db = new LiteDatabase(connectionString);
-            Set = _db.GetCollection<TEntity>() as LiteCollection<TEntity>;
+            Set = db.GetCollection<TEntity>() as LiteCollection<TEntity>;
         }
 
         protected LiteCollection<TEntity> Set { get; }
@@ -53,21 +47,5 @@ namespace DtekShutdownCheckBot.Repositories
         public abstract void Delete(TKey key);
 
         public void DeleteAll() => Set.DeleteAll();
-
-        public void Dispose()
-        {
-            _db.Dispose();
-        }
-
-        private string GetConnectionString(LiteDbOptions options)
-        {
-	        var di = new DirectoryInfo(options.FolderName);
-	        if (!di.Exists)
-	        {
-		        di.Create();
-	        }
-
-	        return Path.Combine(options.FolderName, options.FileName);
-        }
     }
 }

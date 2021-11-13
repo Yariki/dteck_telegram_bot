@@ -13,12 +13,10 @@ namespace DtekShutdownCheckBot.Services
 {
     public class TelegramDtekUpdateHandler : IUpdateHandler
     {
-	    private readonly IRepository<string, Chat> _chatRepository;
 	    private readonly ICommandsFactory _commandsFactory;
 
-	    public TelegramDtekUpdateHandler(IRepository<string,Chat> chatRepository, ICommandsFactory commandsFactory)
+	    public TelegramDtekUpdateHandler(ICommandsFactory commandsFactory)
 	    {
-		    _chatRepository = chatRepository;
 		    _commandsFactory = commandsFactory;
 	    }
 

@@ -350,3 +350,5 @@ MigrationBackup/
 .ionide/
 /DtekShutdownCheckBot/appsettings.json
 /DtekShutdownCheckBot/appsettings.Development.json
+/DteckShutdownCheck/.idea/.idea.DteckShutdownCheck/.idea
+/DtekShutdownCheckBot/DB

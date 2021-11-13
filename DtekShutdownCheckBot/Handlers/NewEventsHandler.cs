@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
+using DtekShutdownCheckBot.Services;
 using MediatR;
 using Telegram.Bot;
 
@@ -12,30 +13,28 @@ namespace DtekShutdownCheckBot.Handlers
 {
 	public class NewEventsHandler : INotificationHandler<NewEvents>
 	{
-		private readonly IRepository<string, Chat> _chatRepository;
-		private readonly IShutdownRepository _shutdownRepository;
-		private readonly ITelegramBotClient _telegramBotClient;
+        private readonly IServiceFactory _serviceFactory;
+        private readonly ITelegramBotClient _telegramBotClient;
 
-		public NewEventsHandler(IRepository<string, Chat> chatRepository,
-			IShutdownRepository shutdownRepository,
+		public NewEventsHandler(IServiceFactory serviceFactory,
 			ITelegramBotClient telegramBotClient)
 		{
-			_chatRepository = chatRepository;
-			_shutdownRepository = shutdownRepository;
-			_telegramBotClient = telegramBotClient;
+            _serviceFactory = serviceFactory;
+            _telegramBotClient = telegramBotClient;
 		}
 
 		public Task Handle(NewEvents notification, CancellationToken cancellationToken)
 		{
-			var newEvents = _shutdownRepository.GetAllNotSentShutdowns();
+			using var unitOfWork = _serviceFactory.Get<IUnitOfWork>();
+			var newEvents = unitOfWork.ShutdownRepository.GetAllNotSentShutdowns();
 			if (!newEvents.Any())
 			{
 				return Task.CompletedTask;
 			}
 
-			foreach (var newEvent in newEvents)
+			foreach (var newEvent in newEvents.OrderBy(e => e.ShutdownDate))
 			{
-				var chats = _chatRepository.GetAllBy(c => c.Words.Contains(newEvent.City));
+				var chats = unitOfWork.ChatRepository.GetAllBy(c => c.Words.Contains(newEvent.City));
 				if (!chats.Any())
 				{
 					continue;
@@ -48,10 +47,9 @@ namespace DtekShutdownCheckBot.Handlers
 				}
 
 				newEvent.IsSent = true;
-				_shutdownRepository.Update(newEvent);
+				unitOfWork.ShutdownRepository.Update(newEvent);
 
 			}
-
 			return Task.CompletedTask;
 		}
 	}
