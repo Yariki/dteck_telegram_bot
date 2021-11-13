@@ -32,6 +32,12 @@ namespace DtekShutdownCheckBot.Commands
 		public ICommand CreateCommand(Update update)
 		{
 			var info = ParseCommandAndArgument(update);
+
+			if(info.cmd == null)
+            {
+				return null;
+            }
+
 			if (!_commandTypes.ContainsKey(info.cmd))
 			{
 				return new DoNothingCommand();
@@ -48,6 +54,10 @@ namespace DtekShutdownCheckBot.Commands
 				return (null, null);
 
 			var entities = update.Message.Entities;
+			if(entities == null)
+            {
+				return (null, null);
+            }
 			if (entities.All(e => e.Type != MessageEntityType.BotCommand))
 			{
 				return (null, null);
