@@ -60,6 +60,7 @@ namespace DtekShutdownCheckBot.Services
 	        {
 		        var url = $"{DTEK_URL}{i}";
 		        using var client = new HttpClient();
+
 		        var content = await client.GetStringAsync(new Uri(url));
 		        if(string.IsNullOrEmpty(content))
 			        continue;
@@ -72,9 +73,12 @@ namespace DtekShutdownCheckBot.Services
                     var children = element.ChildNodes.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode)).ToList();
                     var existingWords = words.Where(w =>
 	                    {
-		                    var subString = Regex.Escape(w);
+		                    var dstBytes = Encoding.Default.GetBytes(Regex.Escape($"{w}"));
+		                    var scrBytes = Encoding.Convert(Encoding.Default, doc.Encoding, dstBytes);
+		                    var subString = doc.Encoding.GetString(scrBytes);
+
 		                    var input = children[3].InnerText.Replace("\n", string.Empty).Trim();
-		                    var match = Regex.IsMatch(input, subString, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+		                    var match = input.Contains(subString, StringComparison.InvariantCultureIgnoreCase);
 		                    return match;
 	                    }
 	                    ).Select(w => w).ToList();
