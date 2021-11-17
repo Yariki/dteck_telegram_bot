@@ -1,9 +1,16 @@
-﻿using DtekShutdownCheckBot.Models;
+﻿using System;
+using System.Collections.Generic;
+using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using DtekShutdownCheckBot.Repositories;
 using MediatR;
 using System.Globalization;
+using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 
 namespace DtekShutdownCheckBot.Services
 {

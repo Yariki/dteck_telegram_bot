@@ -1,4 +1,5 @@
 ﻿using DtekShutdownCheckBot.Models.Entities;
+using System;
 
 namespace DtekShutdownCheckBot.Repositories
 {

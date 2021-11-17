@@ -1,4 +1,5 @@
-﻿using DtekShutdownCheckBot.Repositories;
+﻿using System.Threading.Tasks;
+using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;

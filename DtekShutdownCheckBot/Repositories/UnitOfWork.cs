@@ -1,4 +1,6 @@
-﻿using DtekShutdownCheckBot.Models;
+﻿using System;
+using System.IO;
+using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Models.Entities;
 using LiteDB;
 using Microsoft.Extensions.Options;
@@ -39,7 +41,7 @@ namespace DtekShutdownCheckBot.Repositories
                 _disposedValue = true;
             }
         }
-         
+
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         // ~UnitOfWork()
         // {
