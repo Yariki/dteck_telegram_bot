@@ -37,7 +37,7 @@ namespace DtekShutdownCheckBot
 	        services.AddSingleton<IServiceFactory>(provider => new ServiceFactory(provider.GetService));
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<ICommandsFactory, CommandsFactory>();
-            services.AddHostedService<ReceivingHostedService>();
+            services.AddHostedService<TelegramBotHostedService>();
             services.AddHostedService<DtekCheckingHostedService>();
 
         }
