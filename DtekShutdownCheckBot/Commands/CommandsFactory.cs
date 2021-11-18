@@ -16,7 +16,8 @@ namespace DtekShutdownCheckBot.Commands
 		{
 			{ "city", typeof(RegisterCommand) },
 			{ "clear", typeof(ClearCommand) },
-			{ "list", typeof(ListCommand) }
+			{ "list", typeof(ListCommand) },
+            {"check", typeof(CheckCommand)}
 		};
 
 		private readonly IServiceProvider _serviceProvider;

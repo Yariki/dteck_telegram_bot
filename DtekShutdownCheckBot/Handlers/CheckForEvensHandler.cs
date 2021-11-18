@@ -145,29 +145,42 @@ namespace DtekShutdownCheckBot.Handlers
 					return;
 				}
 
-				foreach (var shutdown in shutdowns)
-				{
-					foreach (var dateTime in shutdown.Value)
-					{
-						var model = new Shutdown()
-						{
-							Id = Guid.NewGuid().ToString(),
-							City = shutdown.Key,
-							ShutdownDate = dateTime,
-							Hashcode = shutdown.Key.GetHashCode() ^ dateTime.GetHashCode(),
-							IsSent = false
-						};
-						unitOfWork.ShutdownRepository.Add(model);
-					}
-				}
-			}
 
-			if (shutdowns.Any())
-	        {
-		        _mediator?.Publish(new NewEvents());
-	        }
+                if (notification.ChatIds != null && notification.ChatIds.Any())
+                {
 
+                    var shutdownsEvents = shutdowns.Select(p => p.Value.SelectMany(d => new Shutdown()
+                    {
+						Id = Guid.NewGuid().ToString(),
+						City = p.Key,
+						ShutdownDate = d,
+						Hashcode = p.Key.GetHashCode() ^ d.GetHashCode(),
+						IsSent = false
+                    })).ToList();
 
+                    _mediator.Publish(new NewEvents(shutdownsEvents));
+                }
+                else if(shutdowns.Any())
+                {
+                    foreach (var shutdown in shutdowns)
+                    {
+                        foreach (var dateTime in shutdown.Value)
+                        {
+                            var model = new Shutdown()
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                City = shutdown.Key,
+                                ShutdownDate = dateTime,
+                                Hashcode = shutdown.Key.GetHashCode() ^ dateTime.GetHashCode(),
+                                IsSent = false
+                            };
+                            unitOfWork.ShutdownRepository.Add(model);
+                        }
+                    }
+
+                    _mediator?.Publish(new NewEvents());
+                }
+            }
 		}
 	}
 }

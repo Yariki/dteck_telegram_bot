@@ -11,5 +11,5 @@ namespace DtekShutdownCheckBot.Models
 		}
 
 		public IList<long> ChatIds { get; }
-	}
+    }
 }
