@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
+using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Chat = DtekShutdownCheckBot.Models.Entities.Chat;
@@ -49,6 +51,8 @@ namespace DtekShutdownCheckBot.Commands
 			if (!string.IsNullOrEmpty(Argument))
 			{
 				await BotClient.SendTextMessageAsync(chat.ChatId, $"The {Argument} has been registered");
+
+				ServiceFactory.Get<IMediator>()?.Publish(new CheckForEvent(new List<long>() { chat.ChatId }));
 			}
 
 		}

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -23,13 +25,45 @@ namespace DtekShutdownCheckBot.Handlers
             _telegramBotClient = telegramBotClient;
 		}
 
-		public Task Handle(NewEvents notification, CancellationToken cancellationToken)
+		public async Task Handle(NewEvents notification, CancellationToken cancellationToken)
+		{
+			if (notification.ChatIds != null && notification.Shutdowns != null)
+			{
+				await SendMessageToParticularChat(notification);
+				return;
+			}
+
+			await SendMessagesToAllChats();
+
+		}
+
+		private async Task SendMessageToParticularChat(NewEvents newEvents)
+		{
+			using var unitOfWork = _serviceFactory.Get<IUnitOfWork>();
+			var chats = unitOfWork.ChatRepository.GetAllBy(c => newEvents.ChatIds.Contains(c.ChatId)).ToList();
+
+			var stringComparer = new StringComparer();
+
+			foreach (var shutdown in newEvents.Shutdowns)
+			{
+				var chatsToSend = chats.Where(c => c.Words.Contains(shutdown.City, stringComparer));
+
+				foreach (var chatToSend in chatsToSend)
+				{
+					await _telegramBotClient.SendTextMessageAsync(chatToSend.ChatId,
+						$"Planned shutdown in {shutdown.City} on {shutdown.ShutdownDate.ToShortDateString()}");
+				}
+			}
+
+		}
+
+		private async Task SendMessagesToAllChats()
 		{
 			using var unitOfWork = _serviceFactory.Get<IUnitOfWork>();
 			var newEvents = unitOfWork.ShutdownRepository.GetAllNotSentShutdowns().OrderBy(s => s.ShutdownDate).ToList();
 			if (!newEvents.Any())
 			{
-				return Task.CompletedTask;
+				return;
 			}
 
 			foreach (var newEvent in newEvents)
@@ -42,15 +76,30 @@ namespace DtekShutdownCheckBot.Handlers
 
 				foreach (var chat in chats)
 				{
-					_telegramBotClient.SendTextMessageAsync(chat.ChatId,
-						$"Planned shutdown in {newEvent.City} on {newEvent.ShutdownDate}");
+					await _telegramBotClient.SendTextMessageAsync(chat.ChatId,
+						$"Planned shutdown in {newEvent.City} on {newEvent.ShutdownDate.ToShortDateString()}");
 				}
 
 				newEvent.IsSent = true;
 				unitOfWork.ShutdownRepository.Update(newEvent);
 
 			}
-			return Task.CompletedTask;
+
+
 		}
+
+		class StringComparer : IEqualityComparer<string>
+		{
+			public bool Equals(string? x, string? y)
+			{
+				return x.Equals(y, StringComparison.InvariantCultureIgnoreCase);
+			}
+
+			public int GetHashCode(string obj)
+			{
+				return obj.GetHashCode();
+			}
+		}
+
 	}
 }

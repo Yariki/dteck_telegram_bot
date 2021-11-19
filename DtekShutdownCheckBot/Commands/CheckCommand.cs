@@ -1,23 +1,29 @@
-﻿using DtekShutdownCheckBot.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using DtekShutdownCheckBot.Commands;
+using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Services;
 using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace DtekShutdownCheckBot.Commands;
-
-public class CheckCommand : Command<object>
+namespace DtekShutdownCheckBot.Commands
 {
-    public CheckCommand(IServiceFactory serviceFactory, ITelegramBotClient botClient, object argument) : base(serviceFactory, botClient, argument)
-    {
-    }
 
-    public override Task ExecuteAsync(Message message)
-    {
-        var currentChatId = message.Chat.Id;
-        var mediator = ServiceFactory.Get<IMediator>();
-        mediator.Publish(new CheckForEvent(new List<long>() { currentChatId }));
+	public class CheckCommand : Command<object>
+	{
+		public CheckCommand(IServiceFactory serviceFactory, ITelegramBotClient botClient, object argument) : base(
+			serviceFactory, botClient, argument)
+		{
+		}
 
-        return Task.CompletedTask;
-    }
+		public override Task ExecuteAsync(Message message)
+		{
+			var currentChatId = message.Chat.Id;
+			var mediator = ServiceFactory.Get<IMediator>();
+			mediator.Publish(new CheckForEvent(new List<long>() { currentChatId }));
+
+			return Task.CompletedTask;
+		}
+	}
 }

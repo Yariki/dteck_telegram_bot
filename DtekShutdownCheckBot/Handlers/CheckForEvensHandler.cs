@@ -148,17 +148,21 @@ namespace DtekShutdownCheckBot.Handlers
 
                 if (notification.ChatIds != null && notification.ChatIds.Any())
                 {
+                    var listOfShutdowns = new List<Shutdown>();
 
-                    var shutdownsEvents = shutdowns.Select(p => p.Value.SelectMany(d => new Shutdown()
+                    foreach (var item in shutdowns)
                     {
-						Id = Guid.NewGuid().ToString(),
-						City = p.Key,
-						ShutdownDate = d,
-						Hashcode = p.Key.GetHashCode() ^ d.GetHashCode(),
-						IsSent = false
-                    })).ToList();
+	                    listOfShutdowns.AddRange(item.Value.Select(d => new Shutdown()
+	                    {
+		                    Id = Guid.NewGuid().ToString(),
+		                    City = item.Key,
+		                    ShutdownDate = d,
+		                    Hashcode = item.Key.GetHashCode() ^ d.GetHashCode(),
+		                    IsSent = false
+	                    }).ToList());
+                    }
 
-                    _mediator.Publish(new NewEvents(shutdownsEvents));
+                    _mediator.Publish(new NewEvents(notification.ChatIds, listOfShutdowns));
                 }
                 else if(shutdowns.Any())
                 {

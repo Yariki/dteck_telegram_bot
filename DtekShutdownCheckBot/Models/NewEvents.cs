@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DtekShutdownCheckBot.Models.Entities;
 using MediatR;
 
@@ -7,14 +8,18 @@ namespace DtekShutdownCheckBot.Models
 	{
         public NewEvents()
         {
-            
+
         }
 
-        public NewEvents(List<Shutdown> shutdowns)
+
+        public NewEvents(IList<long> chatIds,  IList<Shutdown> shutdowns)
         {
+	        ChatIds = chatIds;
             Shutdowns = shutdowns;
         }
 
-        public List<Shutdown> Shutdowns { get; }
+        public IList<long> ChatIds { get; }
+
+        public IList<Shutdown> Shutdowns { get; }
 	}
 }
