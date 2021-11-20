@@ -35,23 +35,22 @@ namespace DtekShutdownCheckBot.Handlers
 			_mediator = mediator;
 			_logger = logger;
 		}
-
-
+		
 		public async Task Handle(CheckForEvent notification, CancellationToken cancellationToken)
 		{
 			if (notification == null)
 			{
 				return;
 			}
-			var shutdowns = new Dictionary<string, HashSet<DateTime>>();
+
+            var shutdowns = new List<Shutdown>();
 			using (var unitOfWork = _serviceFactory.Get<IUnitOfWork>())
 			{
 				var words = notification.ChatIds != null && notification.ChatIds.Any()
 					? unitOfWork.ChatRepository.GetAllBy(c => notification.ChatIds.Contains(c.ChatId))
 						.SelectMany(c => c.Words).Distinct()
 					: unitOfWork.ChatRepository.GetAll().SelectMany(c => c.Words).Distinct();
-
-
+				
 				if (words == null || !words.Any())
 				{
 					return;
@@ -59,8 +58,7 @@ namespace DtekShutdownCheckBot.Handlers
 
 				try
 				{
-
-
+					
 					for (int i = 1; i <= NUMBER_PAGES; i++)
 					{
 						var url = $"{DTEK_URL}{i}";
@@ -77,8 +75,7 @@ namespace DtekShutdownCheckBot.Handlers
 						{
 							try
 							{
-
-
+								
 								var children = element.ChildNodes
 									.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode))
 									.ToList();
@@ -105,27 +102,23 @@ namespace DtekShutdownCheckBot.Handlers
 
 								var date = DateTime.Parse(children[0].InnerText.Trim(),
 									new CultureInfo("uk-UA", false));
+								var timeOfTheEvent = children[6].InnerText.Trim();
+
+								// create shutdown instance with all info and check if there is by comparing with hashcode.
 
 								foreach (var existingWord in existingWords)
 								{
-									if (unitOfWork.ShutdownRepository.IsExistShutdown(existingWord, date))
+									if (notification.ChatIds == null && unitOfWork.ShutdownRepository.IsExistShutdown(existingWord, date))
 									{
 										continue;
 									}
 
-									if (shutdowns.ContainsKey(existingWord) && shutdowns[existingWord].Contains(date))
+									if (notification.ChatIds == null && shutdowns.Any(s => s.Hashcode == (existingWord.GetHashCode() ^ date.GetHashCode())))
 									{
 										continue;
 									}
-
-									if (shutdowns.ContainsKey(existingWord) && !shutdowns[existingWord].Contains(date))
-									{
-										shutdowns[existingWord].Add(date);
-									}
-									else
-									{
-										shutdowns.Add(existingWord, new HashSet<DateTime>() { date });
-									}
+									
+									shutdowns.Add(new Shutdown(date, existingWord,timeOfTheEvent));
 								}
 							}
 							catch (Exception ex)
@@ -144,45 +137,19 @@ namespace DtekShutdownCheckBot.Handlers
 				{
 					return;
 				}
-
-
+				
                 if (notification.ChatIds != null && notification.ChatIds.Any())
                 {
-                    var listOfShutdowns = new List<Shutdown>();
-
-                    foreach (var item in shutdowns)
-                    {
-	                    listOfShutdowns.AddRange(item.Value.Select(d => new Shutdown()
-	                    {
-		                    Id = Guid.NewGuid().ToString(),
-		                    City = item.Key,
-		                    ShutdownDate = d,
-		                    Hashcode = item.Key.GetHashCode() ^ d.GetHashCode(),
-		                    IsSent = false
-	                    }).ToList());
-                    }
-
-                    _mediator.Publish(new NewEvents(notification.ChatIds, listOfShutdowns));
+                   
+                    await _mediator?.Publish(new NewEvents(notification.ChatIds, shutdowns), cancellationToken);
                 }
                 else if(shutdowns.Any())
                 {
                     foreach (var shutdown in shutdowns)
                     {
-                        foreach (var dateTime in shutdown.Value)
-                        {
-                            var model = new Shutdown()
-                            {
-                                Id = Guid.NewGuid().ToString(),
-                                City = shutdown.Key,
-                                ShutdownDate = dateTime,
-                                Hashcode = shutdown.Key.GetHashCode() ^ dateTime.GetHashCode(),
-                                IsSent = false
-                            };
-                            unitOfWork.ShutdownRepository.Add(model);
-                        }
+                       unitOfWork.ShutdownRepository.Add(shutdown);
                     }
-
-                    _mediator?.Publish(new NewEvents());
+                    await _mediator?.Publish(new NewEvents(), cancellationToken);
                 }
             }
 		}

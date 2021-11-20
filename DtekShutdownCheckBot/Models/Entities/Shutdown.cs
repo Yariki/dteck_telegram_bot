@@ -5,6 +5,16 @@ namespace DtekShutdownCheckBot.Models.Entities
 {
     public class Shutdown
     {
+        public Shutdown(DateTime shutdownDate, string city, string timeOfTheEvent)
+        {
+            ShutdownDate = shutdownDate;
+            City = city;
+            TimeOfTheEvent = timeOfTheEvent;
+            Id = Guid.NewGuid().ToString();
+            Hashcode = City.GetHashCode() ^ ShutdownDate.GetHashCode();
+            IsSent = false;
+        }
+        
         [BsonId]
         public string Id { get; set; }
 
@@ -16,7 +26,7 @@ namespace DtekShutdownCheckBot.Models.Entities
 
         public bool IsSent { get; set; }
 
-
+        public string TimeOfTheEvent { get; set; }
 
     }
 }

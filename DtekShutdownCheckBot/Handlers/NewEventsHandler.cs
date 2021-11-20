@@ -51,10 +51,9 @@ namespace DtekShutdownCheckBot.Handlers
 				foreach (var chatToSend in chatsToSend)
 				{
 					await _telegramBotClient.SendTextMessageAsync(chatToSend.ChatId,
-						$"Planned shutdown in {shutdown.City} on {shutdown.ShutdownDate.ToShortDateString()}");
+						$"Planned shutdown in {shutdown.City} on {shutdown.ShutdownDate.ToShortDateString()}\nTime of event: {shutdown.TimeOfTheEvent}");
 				}
 			}
-
 		}
 
 		private async Task SendMessagesToAllChats()
