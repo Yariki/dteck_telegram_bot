@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using DtekShutdownCheckBot.Commands;
 using DtekShutdownCheckBot.Models;
-using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
 using Microsoft.AspNetCore.Builder;
@@ -29,6 +29,10 @@ namespace DtekShutdownCheckBot
         public void ConfigureServices(IServiceCollection services)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+
 	        services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
 	        services.AddHttpClient("tgwebclient")
 		        .AddTypedClient<ITelegramBotClient>(httpClient
@@ -47,8 +51,27 @@ namespace DtekShutdownCheckBot
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseWebAssemblyDebugging();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
 
+            app.UseHttpsRedirection();
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapRazorPages();
+                endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
+            });
         }
 
     }

@@ -8,7 +8,7 @@ using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Chat = DtekShutdownCheckBot.Models.Entities.Chat;
+using Chat = DtekShutdownCheckBot.Shared.Entities.Chat;
 
 namespace DtekShutdownCheckBot.Services
 {

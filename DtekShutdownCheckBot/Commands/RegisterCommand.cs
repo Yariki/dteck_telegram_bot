@@ -7,7 +7,7 @@ using DtekShutdownCheckBot.Services;
 using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Chat = DtekShutdownCheckBot.Models.Entities.Chat;
+using Chat = DtekShutdownCheckBot.Shared.Entities.Chat;
 
 namespace DtekShutdownCheckBot.Commands
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using DtekShutdownCheckBot.Models;
-using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Shared.Entities;
 using LiteDB;
 using Microsoft.Extensions.Options;
 

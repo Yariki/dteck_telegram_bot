@@ -1,4 +1,4 @@
-﻿using DtekShutdownCheckBot.Models.Entities;
+﻿using DtekShutdownCheckBot.Shared.Entities;
 using System;
 
 namespace DtekShutdownCheckBot.Repositories
