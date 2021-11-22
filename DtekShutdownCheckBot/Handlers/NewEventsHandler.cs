@@ -44,7 +44,7 @@ namespace DtekShutdownCheckBot.Handlers
 
 			var stringComparer = new StringComparer();
 
-			foreach (var shutdown in newEvents.Shutdowns)
+			foreach (var shutdown in newEvents.Shutdowns.OrderBy(s => s.ShutdownDate))
 			{
 				var chatsToSend = chats.Where(c => c.Words.Contains(shutdown.City, stringComparer));
 

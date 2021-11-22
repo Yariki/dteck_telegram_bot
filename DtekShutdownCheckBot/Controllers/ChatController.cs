@@ -19,7 +19,7 @@ namespace DtekShutdownCheckBot.Controllers
 
         [HttpGet]
         [Route("all")]
-        public ActionResult<IEnumerable<Chat>> All()
+        public async Task<ActionResult<IEnumerable<Chat>>> All()
         {
 
             try
@@ -38,7 +38,7 @@ namespace DtekShutdownCheckBot.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public ActionResult GetById([FromRoute] string id)
+        public async Task<ActionResult<Chat>> GetById([FromRoute] string id)
         {
             try
             {
@@ -53,8 +53,23 @@ namespace DtekShutdownCheckBot.Controllers
             }
         }
 
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<ActionResult> Delete([FromQuery] string id)
+        {
+            try
+            {
+                _unitOfWork.ChatRepository.Delete(id);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                return BadRequest();
+            }
+        }
 
 
-        
+
     }
 }
