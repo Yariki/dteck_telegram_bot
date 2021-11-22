@@ -1,0 +1,49 @@
+﻿@page "/shutdowns"
+@using DtekShutdownCheckBotUIClient.Clients
+@using DtekShutdownCheckBot.Shared.Entities
+@inject ShutdownClient client
+
+
+<PageTitle>Shutdowns</PageTitle>
+
+@if (shutdowns == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Date</th>
+                <th>Time of Event</th>
+                <th>City</th>
+                <th>IsSent</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var shutdown in shutdowns)
+            {
+                <tr>
+                    <td>@shutdown.Id</td>
+                    <td>@shutdown.ShutdownDate.ToShortDateString()</td>
+                    <td>@shutdown.TimeOfTheEvent</td>
+                    <td>@shutdown.City</td>
+                    <td>@shutdown.IsSent.ToString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Shutdown> shutdowns;
+
+    protected override async Task OnInitializedAsync()
+    {
+        shutdowns = await client.GetAllLAsync();
+    }
+
+
+}

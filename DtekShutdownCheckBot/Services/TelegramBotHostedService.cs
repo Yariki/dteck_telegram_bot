@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using DtekShutdownCheckBot.Commands;
-using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;

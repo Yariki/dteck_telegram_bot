@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DtekShutdownCheckBot.Models;
-using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
 using MediatR;
@@ -44,7 +44,7 @@ namespace DtekShutdownCheckBot.Handlers
 
 			var stringComparer = new StringComparer();
 
-			foreach (var shutdown in newEvents.Shutdowns)
+			foreach (var shutdown in newEvents.Shutdowns.OrderBy(s => s.ShutdownDate))
 			{
 				var chatsToSend = chats.Where(c => c.Words.Contains(shutdown.City, stringComparer));
 

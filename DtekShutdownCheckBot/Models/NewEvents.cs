@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Shared.Entities;
 using MediatR;
 
 namespace DtekShutdownCheckBot.Models

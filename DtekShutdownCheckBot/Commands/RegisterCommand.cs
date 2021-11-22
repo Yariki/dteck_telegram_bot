@@ -7,7 +7,7 @@ using DtekShutdownCheckBot.Services;
 using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Chat = DtekShutdownCheckBot.Models.Entities.Chat;
+using Chat = DtekShutdownCheckBot.Shared.Entities.Chat;
 
 namespace DtekShutdownCheckBot.Commands
 {
@@ -33,8 +33,13 @@ namespace DtekShutdownCheckBot.Commands
 					Id = Guid.NewGuid().ToString(),
 					ChatId = message.Chat.Id,
 					FirstName = message.Chat.FirstName,
-					LastName = message.Chat.LastName
-				};
+					LastName = message.Chat.LastName,
+					Description = message.Chat.Description,
+					Title = message.Chat.Title,
+					Bio = message.Chat.Bio,
+					Username = message.Chat.Username
+                };
+				
 				unitOfWork.ChatRepository.Add(chat);
 			}
 

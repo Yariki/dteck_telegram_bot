@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DtekShutdownCheckBot.Models;
-using DtekShutdownCheckBot.Models.Entities;
+using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
 using MediatR;
 using System.Globalization;

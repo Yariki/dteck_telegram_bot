@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using LiteDB;
 
-namespace DtekShutdownCheckBot.Models.Entities
+namespace DtekShutdownCheckBot.Shared.Entities
 {
     public class Chat
     {
@@ -15,6 +15,12 @@ namespace DtekShutdownCheckBot.Models.Entities
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+
+        public string Bio { get; set; }
+
+        public string Description { get; set; }
+
+        public string Title { get; set; }
         
         public string[] Words { get; set; }
 

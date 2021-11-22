@@ -1,0 +1,49 @@
+﻿@page "/chats"
+@using DtekShutdownCheckBotUIClient.Clients
+@using DtekShutdownCheckBot.Shared.Entities
+@inject ChatClient client
+
+<PageTitle>Chats</PageTitle>
+
+<h1>Chats</h1>
+
+@if (chats == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Chat Id</th>
+            <th>Name</th>
+            <th>Words</th>
+        </tr>
+        </thead>
+        
+        <tbody>
+        @foreach (var chat in chats)
+        {
+            <tr>
+                <td>@chat.ChatId</td>
+                <td>@($"{chat.FirstName} {chat.LastName}")</td>
+                <td>@(string.Join(',',chat.Words))</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+
+@code{
+    IEnumerable<Chat> chats;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        chats = await client.GetAllAsync();
+    }
+
+
+}
