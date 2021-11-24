@@ -1,6 +1,8 @@
 ﻿using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
+using DtekShutdownCheckBot.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
+using Telegram.Bot;
 
 namespace DtekShutdownCheckBot.Controllers
 {
@@ -8,11 +10,13 @@ namespace DtekShutdownCheckBot.Controllers
     [ApiController]
     public class ChatController : Controller
     {
+        private readonly ITelegramBotClient _client;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ChatController> _logger;
 
-        public ChatController(IUnitOfWork unitOfWork, ILogger<ChatController> logger)
+        public ChatController(ITelegramBotClient client, IUnitOfWork unitOfWork, ILogger<ChatController> logger)
         {
+            _client = client;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -69,7 +73,19 @@ namespace DtekShutdownCheckBot.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("send")]
+        public async Task<ActionResult> Send([FromBody] Message message)
+        {
+            if (message == null)
+            {
+                return BadRequest();
+            }
 
+            _client?.SendTextMessageAsync(message.ChatId, message.Text);
 
+            return Ok();
+        }
+        
     }
 }

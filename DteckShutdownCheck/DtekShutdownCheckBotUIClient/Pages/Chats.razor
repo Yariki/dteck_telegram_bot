@@ -1,6 +1,7 @@
 ﻿@page "/chats"
 @using DtekShutdownCheckBotUIClient.Clients
 @using DtekShutdownCheckBot.Shared.Entities
+@using System.Dynamic
 @inject ChatClient client
 
 <PageTitle>Chats</PageTitle>
@@ -13,6 +14,25 @@
 }
 else
 {
+    
+    <fieldset class="mb-3">
+        <div class="form-field">
+            <label>Select chat:</label>
+            <select class="form-select mb-3" @onchange="ChatSelected">
+                <option value="-1">(select)</option>
+                @foreach (var chat in chats)
+                {
+                    <option value="@chat.ChatId">@($"{chat.FirstName} {chat.LastName}")</option>
+                }
+            </select>
+        </div>
+        <div class="form-field">
+            <label>Message:</label>
+            <input type="text" @bind-value="message" class="form-control"/>
+        </div>
+        <button @onclick="SendMessage" class="btn btn-primary mb-3">Send</button>
+    </fieldset>
+
     <table class="table">
         <thead>
         <tr>
@@ -39,11 +59,27 @@ else
 @code{
     IEnumerable<Chat> chats;
 
+    long chatId = -1;
+
+    string message = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         chats = await client.GetAllAsync();
     }
 
+
+    private void ChatSelected(ChangeEventArgs e)
+    {
+        long.TryParse((string)e.Value, out chatId);
+    }
+
+    private async Task SendMessage()
+    {
+        if (chatId <= 0) return;
+
+        await client.SendMessage(chatId, message);
+
+    }
 
 }
