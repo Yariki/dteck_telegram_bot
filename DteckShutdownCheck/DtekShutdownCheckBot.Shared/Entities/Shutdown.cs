@@ -5,10 +5,11 @@ namespace DtekShutdownCheckBot.Shared.Entities
 {
     public class Shutdown
     {
-        public Shutdown(DateTime shutdownDate, string city, string timeOfTheEvent)
+        public Shutdown(DateTime shutdownDate, string city, string timeOfTheEvent, string streets)
         {
             ShutdownDate = shutdownDate;
             City = city;
+            Streets = streets;
             TimeOfTheEvent = timeOfTheEvent;
             Id = Guid.NewGuid().ToString();
             Hashcode = City.GetHashCode() ^ ShutdownDate.GetHashCode();
@@ -21,6 +22,8 @@ namespace DtekShutdownCheckBot.Shared.Entities
         public DateTime ShutdownDate { get; set; }
 
         public string City { get; set; }
+
+        public string Streets { get; set; }
 
         public long Hashcode { get; set; }
 

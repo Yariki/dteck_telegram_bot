@@ -20,6 +20,8 @@ namespace DtekShutdownCheckBot.Handlers
 	{
 		const string DTEK_URL = "https://www.dtek-krem.com.ua/ua/outages?query=&rem=%D0%91%D0%BE%D1%80%D0%B8%D1%81%D0%BF%D1%96%D0%BB%D1%8C%D1%81%D1%8C%D0%BA%D0%B8%D0%B9&type=-1&status=-1&shutdown-date=-1&inclusion-date=-1&create-date=-1&page=";
 
+        private const string STREET_LIST_TEMPLATE = "^\\s*{0}:(?<streets>.*)$";
+
 		private const int NUMBER_PAGES = 3;
 
 		private readonly IServiceFactory _serviceFactory;
@@ -93,12 +95,27 @@ namespace DtekShutdownCheckBot.Handlers
 											StringComparison.InvariantCultureIgnoreCase);
 										return match;
 									}
-								).Select(w => w).ToList();
+								).Select(w =>
+                                {
+                                    var streetMatch = Regex.Match(children[3].InnerText,
+                                        string.Format(STREET_LIST_TEMPLATE, w),
+                                        RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                                    string street = string.Empty;
+
+                                    if (streetMatch.Success && streetMatch.Groups.Count > 0)
+                                    {
+                                        street = streetMatch.Groups["streets"].Value;
+                                    }
+
+                                    return (city: w, streets: street);
+                                }).ToList();
 
 								if (!existingWords.Any())
 								{
 									continue;
 								}
+                                
+
 
 								var date = DateTime.Parse(children[0].InnerText.Trim(),
 									new CultureInfo("uk-UA", false));
@@ -108,7 +125,7 @@ namespace DtekShutdownCheckBot.Handlers
 
 								foreach (var existingWord in existingWords)
 								{
-									if (notification.ChatIds == null && unitOfWork.ShutdownRepository.IsExistShutdown(existingWord, date))
+									if (notification.ChatIds == null && unitOfWork.ShutdownRepository.IsExistShutdown(existingWord.city, date))
 									{
 										continue;
 									}
@@ -118,7 +135,7 @@ namespace DtekShutdownCheckBot.Handlers
 										continue;
 									}
 									
-									shutdowns.Add(new Shutdown(date, existingWord,timeOfTheEvent));
+									shutdowns.Add(new Shutdown(date, existingWord.city,timeOfTheEvent, existingWord.streets));
 								}
 							}
 							catch (Exception ex)

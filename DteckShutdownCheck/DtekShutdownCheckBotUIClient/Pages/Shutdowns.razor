@@ -15,10 +15,11 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
+                @*<th>Id</th>*@
                 <th>Date</th>
                 <th>Time of Event</th>
                 <th>City</th>
+                <th>Streets</th>
                 <th>IsSent</th>
             </tr>
         </thead>
@@ -26,10 +27,11 @@ else
             @foreach (var shutdown in shutdowns)
             {
                 <tr>
-                    <td>@shutdown.Id</td>
+                    @*<td>@shutdown.Id</td>*@
                     <td>@shutdown.ShutdownDate.ToShortDateString()</td>
                     <td>@shutdown.TimeOfTheEvent</td>
                     <td>@shutdown.City</td>
+                    <td>@shutdown.Streets</td>
                     <td>@shutdown.IsSent.ToString()</td>
                 </tr>
             }
