@@ -76,7 +76,7 @@ namespace DtekShutdownCheckBot.Handlers
 				foreach (var chat in chats)
 				{
 					await _telegramBotClient.SendTextMessageAsync(chat.ChatId,
-						$"Planned shutdown in {newEvent.City} on {newEvent.ShutdownDate.ToShortDateString()}");
+                        $"Planned shutdown in {newEvent.City} on {newEvent.ShutdownDate.ToShortDateString()}\nTime of event: {newEvent.TimeOfTheEvent}\nStreets: {newEvent.Streets}");
 				}
 
 				newEvent.IsSent = true;

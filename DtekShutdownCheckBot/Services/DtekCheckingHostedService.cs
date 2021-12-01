@@ -31,7 +31,7 @@ namespace DtekShutdownCheckBot.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-	        _timer = new Timer(DoCheck, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+	        _timer = new Timer(DoCheck, null, TimeSpan.Zero, TimeSpan.FromMinutes(15));
 	        return Task.CompletedTask;
         }
 
