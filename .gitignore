@@ -348,7 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-/DtekShutdownCheckBot/appsettings.json
-/DtekShutdownCheckBot/appsettings.Development.json
 /DteckShutdownCheck/.idea/.idea.DteckShutdownCheck/.idea
 /DtekShutdownCheckBot/DB
