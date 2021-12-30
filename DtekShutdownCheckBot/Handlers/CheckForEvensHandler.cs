@@ -22,7 +22,7 @@ namespace DtekShutdownCheckBot.Handlers
 
         private const string STREET_LIST_TEMPLATE = "^\\s*{0}:(?<streets>.*)$";
 
-		private const int NUMBER_PAGES = 3;
+		private const int NUMBER_PAGES = 5;
 
 		private readonly IServiceFactory _serviceFactory;
 		private readonly ITelegramBotClient _telegramBotClient;
