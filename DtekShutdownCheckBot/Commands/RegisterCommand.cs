@@ -23,43 +23,45 @@ namespace DtekShutdownCheckBot.Commands
 
 		public override async Task ExecuteAsync(Message message)
 		{
-			var unitOfWork = ServiceFactory.Get<IUnitOfWork>();
+            using (var unitOfWork = ServiceFactory.Get<IUnitOfWork>())
+            {
 
-			var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id);
-			if (chat == null)
-			{
-				chat = new Chat()
-				{
-					Id = Guid.NewGuid().ToString(),
-					ChatId = message.Chat.Id,
-					FirstName = message.Chat.FirstName,
-					LastName = message.Chat.LastName,
-					Description = message.Chat.Description,
-					Title = message.Chat.Title,
-					Bio = message.Chat.Bio,
-					Username = message.Chat.Username
-                };
-				
-				unitOfWork.ChatRepository.Add(chat);
-			}
+                var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id);
+                if (chat == null)
+                {
+                    chat = new Chat()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ChatId = message.Chat.Id,
+                        FirstName = message.Chat.FirstName,
+                        LastName = message.Chat.LastName,
+                        Description = message.Chat.Description,
+                        Title = message.Chat.Title,
+                        Bio = message.Chat.Bio,
+                        Username = message.Chat.Username
+                    };
 
-			if(chat.Words == null && !string.IsNullOrEmpty(Argument))
-			{
-				chat.Words = new List<string>() { Argument }.ToArray();
-			}
-			else if(!string.IsNullOrEmpty(Argument))
-			{
-				chat.Words = new List<string>(chat.Words) { Argument }.ToArray();
-			}
-			unitOfWork.ChatRepository.Update(chat);
+                    unitOfWork.ChatRepository.Add(chat);
+                }
 
-			if (!string.IsNullOrEmpty(Argument))
-			{
-				await BotClient.SendTextMessageAsync(chat.ChatId, $"The {Argument} has been registered");
+                if (chat.Words == null && !string.IsNullOrEmpty(Argument))
+                {
+                    chat.Words = new List<string>() { Argument }.ToArray();
+                }
+                else if (!string.IsNullOrEmpty(Argument))
+                {
+                    chat.Words = new List<string>(chat.Words) { Argument }.ToArray();
+                }
 
-				ServiceFactory.Get<IMediator>()?.Publish(new CheckForEvent(new List<long>() { chat.ChatId }));
-			}
+                unitOfWork.ChatRepository.Update(chat);
 
-		}
+                if (!string.IsNullOrEmpty(Argument))
+                {
+                    await BotClient.SendTextMessageAsync(chat.ChatId, $"The {Argument} has been registered");
+
+                    ServiceFactory.Get<IMediator>()?.Publish(new CheckForEvent(new List<long>() { chat.ChatId }));
+                }
+            }
+        }
 	}
 }

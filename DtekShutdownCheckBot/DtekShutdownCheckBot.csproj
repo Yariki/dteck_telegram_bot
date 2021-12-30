@@ -30,7 +30,7 @@
 	<PropertyGroup>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
 		<DockerfileContext>..\DteckShutdownCheck</DockerfileContext>
 		<UserSecretsId>d700773c-004d-4c7c-b1b6-5cddb547746f</UserSecretsId>
 	</PropertyGroup>

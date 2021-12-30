@@ -73,7 +73,12 @@ namespace DtekShutdownCheckBot.Handlers
 						doc.LoadHtml(content);
 						var col = doc.DocumentNode.SelectNodes("//tr[@data-id]");
 
-						foreach (var element in col)
+                        if (col == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (var element in col)
 						{
 							try
 							{

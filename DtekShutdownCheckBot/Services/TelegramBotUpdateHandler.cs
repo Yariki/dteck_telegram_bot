@@ -24,15 +24,20 @@ namespace DtekShutdownCheckBot.Services
 		    _logger = logger;
 	    }
 
-        public Task HandleUpdate(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task HandleUpdate(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-	        var command = _commandsFactory.CreateCommand(update);
+            try
+            {
+                var command = _commandsFactory.CreateCommand(update);
 
-	        command?.ExecuteAsync(update.Message);
+                await command?.ExecuteAsync(update.Message)!;
 
-	        _logger.LogInformation($"Command {update.Message.Text} for the chat - {update.Message.Chat.Id}");
-
-	        return Task.CompletedTask;
+                _logger.LogInformation($"Command {update.Message.Text} for the chat - {update.Message.Chat.Id}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,"Error while handling Bot command.");
+            }
         }
 
         public Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
