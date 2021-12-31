@@ -14,8 +14,12 @@ namespace DtekShutdownCheckBot
             Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
                 {   
-                    var port = Environment.GetEnvironmentVariable("PORT");
-                    webBuilder.UseStartup<Startup>().UseUrls("http://*:" + port);
+                    #if DEBUG
+                        webBuilder.UseStartup<Startup>();
+                    #else
+                        var port = Environment.GetEnvironmentVariable("PORT");
+                        webBuilder.UseStartup<Startup>().UseUrls("http://*:" + port);
+                    #endif
                 });
     }
 }
