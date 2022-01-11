@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using DtekShutdownCheckBot.Data;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Shared.Entities;
 using LiteDB;
@@ -10,22 +11,23 @@ namespace DtekShutdownCheckBot.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private bool _disposedValue;
-        private LiteDatabase _db;
-        private IOptions<LiteDbOptions> _options;
+        private DatabaseContext _context;
 
-        public UnitOfWork(IOptions<LiteDbOptions> options)
+        public UnitOfWork(IConfiguration configuration)
         {
-            _options = options;
-            var connectionString = @$"Filename={GetConnectionString(_options.Value)}; Connection=Shared;";
-            _db = new LiteDatabase(connectionString);
-            ChatRepository = new ChatRepository(_db);
-            ShutdownRepository = new ShutdownRepository(_db);
-
+            _context = new DatabaseContext(configuration.GetSection("ConnectionStrings:Database")?.Value);
+            ChatRepository = new ChatRepository(_context);
+            ShutdownRepository = new ShutdownRepository(_context);
         }
 
-        public IRepository<string, Chat> ChatRepository { get; }
+        public IRepository<int, Chat> ChatRepository { get; }
 
         public IShutdownRepository ShutdownRepository { get; }
+
+        public void SaveChanges()
+        {
+            _context?.SaveChanges();
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -33,7 +35,7 @@ namespace DtekShutdownCheckBot.Repositories
             {
                 if (disposing)
                 {
-                    _db?.Dispose();
+                    _context?.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer

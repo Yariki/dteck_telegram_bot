@@ -46,133 +46,151 @@ namespace DtekShutdownCheckBot.Handlers
 			}
 
             var shutdowns = new List<Shutdown>();
-			using (var unitOfWork = _serviceFactory.Get<IUnitOfWork>())
-			{
-				var words = notification.ChatIds != null && notification.ChatIds.Any()
-					? unitOfWork.ChatRepository.GetAllBy(c => notification.ChatIds.Contains(c.ChatId))
-						.SelectMany(c => c.Words).Distinct()
-					: unitOfWork.ChatRepository.GetAll().SelectMany(c => c.Words).Distinct();
-				
-				if (words == null || !words.Any())
-				{
-					return;
-				}
 
-				try
-				{
-					
-					for (int i = 1; i <= NUMBER_PAGES; i++)
-					{
-						var url = $"{DTEK_URL}{i}";
-						using var client = new HttpClient();
+            var unitOfWork = _serviceFactory.Get<IUnitOfWork>();
 
-						var content = await client.GetStringAsync(new Uri(url));
-						if (string.IsNullOrEmpty(content))
-							continue;
-						HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-						doc.LoadHtml(content);
-						var col = doc.DocumentNode.SelectNodes("//tr[@data-id]");
+            try
+            {
+	            var words = notification.ChatIds != null && notification.ChatIds.Any()
+		            ? unitOfWork.ChatRepository.GetAllBy(c => notification.ChatIds.Contains(c.ChatId), "Words")
+			            .SelectMany(c => c.Words.Select(w => w.Value)).Distinct()
+		            : unitOfWork.ChatRepository.GetAll("Words").SelectMany(c => c.Words.Select(w => w.Value))
+			            .Distinct();
 
-                        if (col == null)
-                        {
-                            continue;
-                        }
+	            if (words == null || !words.Any())
+	            {
+		            return;
+	            }
 
-                        foreach (var element in col)
-						{
-							try
-							{
-								
-								var children = element.ChildNodes
-									.Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode))
-									.ToList();
-								var existingWords = words.Where(w =>
-									{
-										var pattern = Regex.Escape($"{w}");
+	            try
+	            {
 
-										// var srcEnc = Encoding.GetEncoding(1252);
-										// var srcBytes = srcEnc.GetBytes(children[3].InnerText);
-										// var dstBytes = Encoding.Convert(srcEnc, Encoding.Default, srcBytes);
-										// var input = Encoding.Default.GetString(dstBytes).Trim();
-										var input = children[3].InnerText;
+		            for (int i = 1; i <= NUMBER_PAGES; i++)
+		            {
+			            var url = $"{DTEK_URL}{i}";
+			            using var client = new HttpClient();
 
-										var match = input.Contains(pattern,
-											StringComparison.InvariantCultureIgnoreCase);
-										return match;
-									}
-								).Select(w =>
-                                {
-                                    var streetMatch = Regex.Match(children[3].InnerText,
-                                        string.Format(STREET_LIST_TEMPLATE, w),
-                                        RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                                    string street = string.Empty;
+			            var content = await client.GetStringAsync(new Uri(url));
+			            if (string.IsNullOrEmpty(content))
+				            continue;
+			            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+			            doc.LoadHtml(content);
+			            var col = doc.DocumentNode.SelectNodes("//tr[@data-id]");
 
-                                    if (streetMatch.Success && streetMatch.Groups.Count > 0)
-                                    {
-                                        street = streetMatch.Groups["streets"].Value;
-                                    }
+			            if (col == null)
+			            {
+				            continue;
+			            }
 
-                                    return (city: w, streets: street);
-                                }).ToList();
+			            foreach (var element in col)
+			            {
+				            try
+				            {
 
-								if (!existingWords.Any())
-								{
-									continue;
-								}
-                                
+					            var children = element.ChildNodes
+						            .Where(c => c.GetType() == typeof(HtmlAgilityPack.HtmlNode))
+						            .ToList();
+					            var existingWords = words.Where(w =>
+						            {
+							            var pattern = Regex.Escape($"{w}");
+
+							            // var srcEnc = Encoding.GetEncoding(1252);
+							            // var srcBytes = srcEnc.GetBytes(children[3].InnerText);
+							            // var dstBytes = Encoding.Convert(srcEnc, Encoding.Default, srcBytes);
+							            // var input = Encoding.Default.GetString(dstBytes).Trim();
+							            var input = children[3].InnerText;
+
+							            var match = input.Contains(pattern,
+								            StringComparison.InvariantCultureIgnoreCase);
+							            return match;
+						            }
+					            ).Select(w =>
+					            {
+						            var streetMatch = Regex.Match(children[3].InnerText,
+							            string.Format(STREET_LIST_TEMPLATE, w),
+							            RegexOptions.IgnoreCase | RegexOptions.Multiline);
+						            string street = string.Empty;
+
+						            if (streetMatch.Success && streetMatch.Groups.Count > 0)
+						            {
+							            street = streetMatch.Groups["streets"].Value;
+						            }
+
+						            return (city: w, streets: street);
+					            }).ToList();
+
+					            if (!existingWords.Any())
+					            {
+						            continue;
+					            }
 
 
-								var date = DateTime.Parse(children[0].InnerText.Trim(),
-									new CultureInfo("uk-UA", false));
-								var timeOfTheEvent = children[6].InnerText.Trim();
 
-								// create shutdown instance with all info and check if there is by comparing with hashcode.
+					            var date = DateTime.Parse(children[0].InnerText.Trim(),
+						            new CultureInfo("uk-UA", false));
+					            var timeOfTheEvent = children[6].InnerText.Trim();
 
-								foreach (var existingWord in existingWords)
-								{
-									if (notification.ChatIds == null && unitOfWork.ShutdownRepository.IsExistShutdown(existingWord.city, date))
-									{
-										continue;
-									}
+					            // create shutdown instance with all info and check if there is by comparing with hashcode.
 
-									if (notification.ChatIds == null && shutdowns.Any(s => s.Hashcode == (existingWord.GetHashCode() ^ date.GetHashCode())))
-									{
-										continue;
-									}
-									
-									shutdowns.Add(new Shutdown(date, existingWord.city,timeOfTheEvent, existingWord.streets));
-								}
-							}
-							catch (Exception ex)
-							{
-								_logger.LogError(ex.ToString());
-							}
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex.ToString());
-				}
+					            foreach (var existingWord in existingWords)
+					            {
+						            if (notification.ChatIds == null &&
+						                unitOfWork.ShutdownRepository.IsExistShutdown(existingWord.city, date))
+						            {
+							            continue;
+						            }
 
-				if (!shutdowns.Any())
-				{
-					return;
-				}
-				
-                if (notification.ChatIds != null && notification.ChatIds.Any())
-                {
-                   
-                    await _mediator?.Publish(new NewEvents(notification.ChatIds, shutdowns), cancellationToken);
-                }
-                else if(shutdowns.Any())
-                {
-                    foreach (var shutdown in shutdowns)
-                    {
-                       unitOfWork.ShutdownRepository.Add(shutdown);
-                    }
-                    await _mediator?.Publish(new NewEvents(), cancellationToken);
-                }
+						            if (shutdowns.Any(s =>
+							                s.Hashcode == (existingWord.city.GetHashCode() ^ date.GetHashCode())))
+						            {
+							            continue;
+						            }
+
+						            shutdowns.Add(new Shutdown(date, existingWord.city, timeOfTheEvent,
+							            existingWord.streets));
+					            }
+				            }
+				            catch (Exception ex)
+				            {
+					            _logger.LogError(ex.ToString());
+				            }
+			            }
+		            }
+	            }
+	            catch (Exception ex)
+	            {
+		            _logger.LogError(ex.ToString());
+	            }
+
+	            if (!shutdowns.Any())
+	            {
+		            return;
+	            }
+
+	            if (notification.ChatIds != null && notification.ChatIds.Any())
+	            {
+
+		            await _mediator?.Publish(new NewEvents(notification.ChatIds, shutdowns), cancellationToken);
+	            }
+	            else if (shutdowns.Any())
+	            {
+		            foreach (var shutdown in shutdowns)
+		            {
+			            unitOfWork.ShutdownRepository.Add(shutdown);
+		            }
+
+		            unitOfWork.SaveChanges();
+
+		            await _mediator?.Publish(new NewEvents(), cancellationToken);
+	            }
+            }
+            catch (Exception ex)
+            {
+				_logger.LogError(ex,"Exception occured while checking events");
+            }
+            finally
+            {
+	            unitOfWork.Dispose();
             }
 		}
 	}

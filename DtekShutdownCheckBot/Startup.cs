@@ -1,9 +1,11 @@
 ﻿using System.Text;
 using DtekShutdownCheckBot.Commands;
+using DtekShutdownCheckBot.Data;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
+using LiteDB;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ServiceFactory = DtekShutdownCheckBot.Services.ServiceFactory;
 
 namespace DtekShutdownCheckBot
@@ -34,6 +37,7 @@ namespace DtekShutdownCheckBot
             services.AddRazorPages();
 
 	        services.Configure<LiteDbOptions>(Configuration.GetSection("LiteDbOptions"));
+
 	        services.AddHttpClient("tgwebclient")
 		        .AddTypedClient<ITelegramBotClient>(httpClient
 			        => new TelegramBotClient(BotConfig.Token, httpClient));
@@ -59,7 +63,7 @@ namespace DtekShutdownCheckBot
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",true);
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();

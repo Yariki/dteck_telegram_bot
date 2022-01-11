@@ -1,27 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DtekShutdownCheckBot.Data;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Shared.Entities;
 using LiteDB;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.Extensions.Options;
 
 namespace DtekShutdownCheckBot.Repositories
 {
-    public class ShutdownRepository : BaseRepository<string, Shutdown>, IShutdownRepository
+    public class ShutdownRepository : BaseRepository<int, Shutdown>, IShutdownRepository
     {
-        public ShutdownRepository(LiteDatabase db) : base(db)
+        public ShutdownRepository(DatabaseContext context) : base(context)
         {
         }
 
-        public override Shutdown GetById(string key)
+        public override Shutdown GetById(int key, string include = null)
         {
-            return GetBy(s => s.Id == key);
+            return GetBy(s => s.Id == key, include);
         }
 
-        public override void Delete(string key)
+        public override void Delete(int key)
         {
-            Set.Delete(key);
+            var item = GetById(key);
+            if (item == null)
+            {
+                throw new NullReferenceException(nameof(item));
+            }
+
+            Set.Remove(item);
+        }
+
+        public override void Update(Shutdown entity)
+        {
+            var item = GetById(entity.Id);
+            if (item == null)
+            {
+                throw new NullReferenceException(nameof(item));
+            }
+
+            item = entity;
+            Set.Update(item);
         }
 
         public IEnumerable<Shutdown> GetAllNotSentShutdowns()

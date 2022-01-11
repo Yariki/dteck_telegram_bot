@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using LiteDB;
 
 namespace DtekShutdownCheckBot.Shared.Entities
@@ -11,13 +13,13 @@ namespace DtekShutdownCheckBot.Shared.Entities
             City = city;
             Streets = streets;
             TimeOfTheEvent = timeOfTheEvent;
-            Id = Guid.NewGuid().ToString();
             Hashcode = City.GetHashCode() ^ ShutdownDate.GetHashCode();
             IsSent = false;
         }
         
-        [BsonId]
-        public string Id { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
         public DateTime ShutdownDate { get; set; }
 

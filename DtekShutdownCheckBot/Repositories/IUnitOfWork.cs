@@ -5,7 +5,9 @@ namespace DtekShutdownCheckBot.Repositories
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<string, Chat> ChatRepository { get; }
+        IRepository<int, Chat> ChatRepository { get; }
         IShutdownRepository ShutdownRepository { get; }
+
+        void SaveChanges();
     }
 }

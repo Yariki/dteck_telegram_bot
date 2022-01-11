@@ -28,7 +28,7 @@ namespace DtekShutdownCheckBot.Controllers
 
             try
             {
-                var chats =  _unitOfWork.ChatRepository.GetAll();
+                var chats =  _unitOfWork.ChatRepository.GetAll("Words");
 
                 return chats != null ? Ok(chats) : NotFound("There is no chat(s) yet.");
             }
@@ -42,7 +42,7 @@ namespace DtekShutdownCheckBot.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<ActionResult<Chat>> GetById([FromRoute] string id)
+        public async Task<ActionResult<Chat>> GetById([FromRoute] int id)
         {
             try
             {
@@ -59,11 +59,13 @@ namespace DtekShutdownCheckBot.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<ActionResult> Delete([FromQuery] string id)
+        public async Task<ActionResult> Delete([FromQuery] int id)
         {
             try
             {
                 _unitOfWork.ChatRepository.Delete(id);
+                _unitOfWork.SaveChanges();
+                
                 return Ok();
             }
             catch (Exception e)

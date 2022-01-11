@@ -21,9 +21,11 @@ namespace DtekShutdownCheckBot.Commands
             {
                 return;
             }
+            
 
-            chat.Words = new string[] { };
+
             unitOfWork.ChatRepository.Update(chat);
+            unitOfWork.SaveChanges();
 
             await BotClient.SendTextMessageAsync(chat.ChatId, "The list of cities was cleared");
         }

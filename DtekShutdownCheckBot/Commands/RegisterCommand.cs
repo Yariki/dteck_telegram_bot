@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Repositories;
 using DtekShutdownCheckBot.Services;
+using DtekShutdownCheckBot.Shared.Entities;
 using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -26,12 +27,11 @@ namespace DtekShutdownCheckBot.Commands
             using (var unitOfWork = ServiceFactory.Get<IUnitOfWork>())
             {
 
-                var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id);
+                var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id, "Words");
                 if (chat == null)
                 {
                     chat = new Chat()
                     {
-                        Id = Guid.NewGuid().ToString(),
                         ChatId = message.Chat.Id,
                         FirstName = message.Chat.FirstName,
                         LastName = message.Chat.LastName,
@@ -42,18 +42,21 @@ namespace DtekShutdownCheckBot.Commands
                     };
 
                     unitOfWork.ChatRepository.Add(chat);
+                    unitOfWork.SaveChanges();
                 }
 
                 if (chat.Words == null && !string.IsNullOrEmpty(Argument))
                 {
-                    chat.Words = new List<string>() { Argument }.ToArray();
+                    chat.Words = new List<Word>(){new Word(){Value = Argument}};
+                    unitOfWork.ChatRepository.Update(chat);
                 }
-                else if (!string.IsNullOrEmpty(Argument))
+                else if (!string.IsNullOrEmpty(Argument) && chat.Words.Any())
                 {
-                    chat.Words = new List<string>(chat.Words) { Argument }.ToArray();
+                    chat.Words.Add(new Word(){Value = Argument});
+                    unitOfWork.ChatRepository.Update(chat);
                 }
-
-                unitOfWork.ChatRepository.Update(chat);
+                
+                unitOfWork.SaveChanges();
 
                 if (!string.IsNullOrEmpty(Argument))
                 {

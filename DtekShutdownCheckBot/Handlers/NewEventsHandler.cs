@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DtekShutdownCheckBot.Extensions;
 using DtekShutdownCheckBot.Models;
 using DtekShutdownCheckBot.Shared.Entities;
 using DtekShutdownCheckBot.Repositories;
@@ -40,13 +41,13 @@ namespace DtekShutdownCheckBot.Handlers
 		private async Task SendMessageToParticularChat(NewEvents newEvents)
 		{
 			using var unitOfWork = _serviceFactory.Get<IUnitOfWork>();
-			var chats = unitOfWork.ChatRepository.GetAllBy(c => newEvents.ChatIds.Contains(c.ChatId)).ToList();
+			var chats = unitOfWork.ChatRepository.GetAllBy(c => newEvents.ChatIds.Contains(c.ChatId), "Words").ToList();
 
 			var stringComparer = new StringComparer();
 
 			foreach (var shutdown in newEvents.Shutdowns.OrderBy(s => s.ShutdownDate))
 			{
-				var chatsToSend = chats.Where(c => c.Words.Contains(shutdown.City, stringComparer));
+				var chatsToSend = chats.Where(c => c.ContainsCity(shutdown.City));
 
 				foreach (var chatToSend in chatsToSend)
 				{
@@ -67,7 +68,8 @@ namespace DtekShutdownCheckBot.Handlers
 
 			foreach (var newEvent in newEvents)
 			{
-				var chats = unitOfWork.ChatRepository.GetAllBy(c => c.Words.Contains(newEvent.City));
+				var chats = unitOfWork.ChatRepository.GetAll("Words"); // TODO: refactore 
+				chats = chats.Where(c => c.ContainsCity(newEvent.City));
 				if (!chats.Any())
 				{
 					continue;
@@ -83,8 +85,6 @@ namespace DtekShutdownCheckBot.Handlers
 				unitOfWork.ShutdownRepository.Update(newEvent);
 
 			}
-
-
 		}
 
 		class StringComparer : IEqualityComparer<string>

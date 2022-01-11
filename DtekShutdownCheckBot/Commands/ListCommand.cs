@@ -17,19 +17,14 @@ namespace DtekShutdownCheckBot.Commands
         {
             using var unitOfWork = ServiceFactory.Get<IUnitOfWork>();
 
-            var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id);
+            var chat = unitOfWork.ChatRepository.GetBy(c => c.ChatId == message.Chat.Id, "Words");
 
             if(chat == null)
             {
                 return;
             }
 
-            var mes = new StringBuilder();
-            foreach (var item in chat.Words)
-            {
-                mes.AppendLine(item);
-            }
-            await BotClient.SendTextMessageAsync(chat.ChatId, mes.ToString());
+            await BotClient.SendTextMessageAsync(chat.ChatId, string.Join(',',chat.Words.Select(w => w.Value)));
         }
     }
 }

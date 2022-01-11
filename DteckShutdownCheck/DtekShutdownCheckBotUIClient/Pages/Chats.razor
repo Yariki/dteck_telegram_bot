@@ -48,7 +48,7 @@ else
             <tr>
                 <td>@chat.ChatId</td>
                 <td>@($"{chat.FirstName} {chat.LastName}")</td>
-                <td>@(string.Join(',',chat.Words))</td>
+                <td>@(string.Join(',',chat.Words.Select(w => w.Value)))</td>
             </tr>
         }
         </tbody>
